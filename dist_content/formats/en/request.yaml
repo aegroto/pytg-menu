@@ -1,0 +1,7 @@
+cacheable: false
+type: inline 
+markup:
+- [
+  {text: "Accept", callback_data: "requests,accept,REQUEST_TYPE,REQUEST_ID"},
+  {text: "Reject", callback_data: "requests,reject,REQUEST_TYPE,REQUEST_ID"}
+]
