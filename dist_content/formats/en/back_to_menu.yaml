@@ -1,6 +1,0 @@
-cacheable: false
-type: inline 
-markup:
-- [
-  {text: "Back to main menu", callback_data: "menu,switchf,main_menu"},
-]  

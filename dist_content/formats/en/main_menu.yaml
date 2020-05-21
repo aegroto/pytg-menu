@@ -1,4 +1,5 @@
 cacheable: true
 type: inline 
 markup:
-- [{text: "Dummy", callback_data: "forms,show,dummy"}]
+- [{text: "Callback button", callback_data: "test"}]
+- [{text: "URL Button, url: "t.me/__NULL"}]

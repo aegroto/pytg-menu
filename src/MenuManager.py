@@ -26,7 +26,7 @@ class MenuManager(Manager):
     def create_reply_markup(self, menu_id, lang=None, meta={}):
         if not lang:
             config_manager = ModulesLoader.load_manager("config")
-            lang_settings = config_manager.load_settings_file("lang")
+            lang_settings = config_manager.load_settings_file("menu", "lang")
             lang = lang_settings["default"]
 
         full_menu_id = "{}_{}".format(menu_id, lang)
@@ -137,7 +137,7 @@ class MenuManager(Manager):
 
         if not lang:
             config_manager = ModulesLoader.load_manager("config")
-            lang_settings = config_manager.load_settings_file("lang")
+            lang_settings = config_manager.load_settings_file("menu", "lang")
             lang = lang_settings["default"]
 
         return yaml.safe_load(open("{}/text/{}/menu_headers.yaml".format(module_folder, lang), "r", encoding="utf8"))
