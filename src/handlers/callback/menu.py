@@ -16,17 +16,19 @@ def menu_callback_handler(update, context):
     logging.info("Handling menu callback data from {}: {}".format(chat_id, query_data))
 
     if query_data[1] == "switch":
-        menu_id = query_data[2]
+        module_name = query_data[2]
+        menu_id = query_data[3]
 
         menu_manager = ModulesLoader.load_manager("menu")
-        menu_manager.switch_menu(bot, chat_id, menu_id, message_id)
+        menu_manager.switch_menu(bot, chat_id, module_name, menu_id, message_id)
 
         return
 
     if query_data[1] == "switchf":
-        menu_id = query_data[2]
+        module_name = query_data[2]
+        menu_id = query_data[3]
 
         menu_manager = ModulesLoader.load_manager("menu")
-        menu_manager.switch_menu(bot, chat_id, menu_id, message_id, force=True)
+        menu_manager.switch_menu(bot, chat_id, module_name, menu_id, message_id, force=True)
 
         return

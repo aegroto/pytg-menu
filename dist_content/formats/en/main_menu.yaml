@@ -1,5 +1,0 @@
-cacheable: true
-type: inline 
-markup:
-- [{text: "Callback button", callback_data: "test"}]
-- [{text: "URL Button, url: "t.me/__NULL"}]
