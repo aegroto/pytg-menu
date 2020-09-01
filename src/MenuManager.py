@@ -143,11 +143,4 @@ class MenuManager(Manager):
             )
 
     def load_menu_headers(self, lang=None):
-        module_folder = ModulesLoader.get_module_content_folder("menu")
-
-        if not lang:
-            config_manager = ModulesLoader.load_manager("config")
-            lang_settings = config_manager.load_settings_file("menu", "lang")
-            lang = lang_settings["default"]
-
-        return yaml.safe_load(open("{}/text/{}/menu_headers.yaml".format(module_folder, lang), "r", encoding="utf8"))
+        return {}
