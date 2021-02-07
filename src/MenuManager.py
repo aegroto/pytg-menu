@@ -2,20 +2,10 @@ import telegram, yaml, logging, traceback
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
-from modules.pytg.Manager import Manager
-from modules.pytg.load import manager, get_module_content_folder
+from pytg.Manager import Manager
+from pytg.load import manager, get_module_content_folder
 
 class MenuManager(Manager):
-    @staticmethod
-    def initialize():
-        MenuManager.__instance = MenuManager()
-
-        return
-
-    @staticmethod
-    def load():
-        return MenuManager.__instance
-
     def __init__(self):
         self.cached_reply_markup = { }
 
@@ -56,20 +46,12 @@ class MenuManager(Manager):
                     # Retrieving callback data
                     callback_data = None
                     if "callback_data" in button.keys():
-                        callback_data = button["callback_data"]
-
-                        # Replace meta keys
-                        for meta_key in meta:
-                            callback_data = callback_data.replace(meta_key, str(meta[meta_key]))
+                        callback_data = self.__meta_replace(button["callback_data"], meta)
 
                     # Retrieving URL
                     url = None
                     if "url" in button.keys():
-                        url = button["url"]
-
-                        # Replace meta keys
-                        for meta_key in meta:
-                            url = url.replace(meta_key, str(meta[meta_key]))
+                        self.__meta_replace(button["url"], meta)
 
                     menu_row.append(InlineKeyboardButton(text, callback_data = callback_data, url = url))
 
@@ -82,7 +64,10 @@ class MenuManager(Manager):
                 menu_row = []
 
                 for button in row:
-                    menu_row.append(KeyboardButton(button["text"]))
+                    # Retrieve phrase
+                    text = phrases[button["phrase"]]
+
+                    menu_row.append(KeyboardButton(text))
 
                 menu_layout.append(menu_row)
                 
@@ -104,56 +89,74 @@ class MenuManager(Manager):
 
         return yaml.safe_load(open("{}/menu/phrases/{}/{}.yaml".format(module_folder, lang, menu_id), "r", encoding="utf8"))
 
-    def send_menu(self, bot, chat_id, module_name, menu_id, lang=None):
+    def send_menu(self, bot, chat_id, module_name, menu_id, lang=None, meta={}):
         if not lang:
             lang = self.__load_default_lang()
 
-        reply_markup = self.create_reply_markup(module_name, menu_id)
+        reply_markup = self.create_reply_markup(module_name, menu_id, meta=meta)
 
         header_text = self.__load_phrases(module_name, menu_id, lang)["_header"]
+        header_text = self.__meta_replace(header_text, meta)
 
-        bot.sendMessage(
+        sent_message = bot.sendMessage(
             chat_id = chat_id,
             text = header_text,
             reply_markup = reply_markup
         )
 
-    def switch_menu(self, bot, chat_id, module_name, menu_id, message_id=None, force=False, lang=None):
-        logging.info("Switching to menu {} for {} (message {})".format(menu_id, chat_id, message_id))
+        return sent_message
 
+    def switch_menu(self, bot, chat_id, module_name, menu_id, message_id=None, meta={}, force=False, lang=None):
         if not lang:
             lang = self.__load_default_lang()
 
-        reply_markup = self.create_reply_markup(module_name, menu_id)
+        reply_markup = self.create_reply_markup(module_name, menu_id, meta=meta)
 
-        header_text = self.__load_phrases(module_name, menu_id, lang)["_header"]
+        phrases = self.__load_phrases(module_name, menu_id, lang)
+
+        if "_header" in phrases:
+            header_text = phrases["_header"]
+            header_text = self.__meta_replace(header_text, meta)
+        else:
+            header_text = None
 
         if message_id:
             try:
-                bot.editMessageText(
-                    chat_id = chat_id,
-                    text = header_text,
-                    message_id = message_id,
-                    reply_markup = reply_markup
-                )
-            except:
+                if header_text:
+                    sent_message = bot.editMessageText(
+                        chat_id = chat_id,
+                        text = header_text,
+                        message_id = message_id,
+                        reply_markup = reply_markup
+                    )
+                else:
+                    sent_message = bot.editMessageReplyMarkup(
+                        chat_id = chat_id,
+                        message_id = message_id,
+                        reply_markup = reply_markup
+                    )
+            except Exception as e:
                 if force:
                     bot.deleteMessage(
                         chat_id = chat_id,
                         message_id = message_id
                     )
 
-                    bot.sendMessage(
+                    sent_message = bot.sendMessage(
                         chat_id = chat_id,
                         text = header_text,
                         reply_markup = reply_markup
                     )
                 else:
-                    logging.error("Exception while switching menus")
-                    traceback.print_exc()
+                    raise e
         else:
-            bot.sendMessage(
+            sent_message = bot.sendMessage(
                 chat_id = chat_id,
                 text = header_text,
                 reply_markup = reply_markup
             )
+
+        return sent_message
+
+    def __meta_replace(self, text, meta):
+        return text.format(**meta)
