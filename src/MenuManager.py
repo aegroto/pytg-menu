@@ -51,7 +51,7 @@ class MenuManager(Manager):
                     # Retrieving URL
                     url = None
                     if "url" in button.keys():
-                        self.__meta_replace(button["url"], meta)
+                        url = self.__meta_replace(button["url"], meta)
 
                     menu_row.append(InlineKeyboardButton(text, callback_data = callback_data, url = url))
 
